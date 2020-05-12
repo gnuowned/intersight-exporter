@@ -1,0 +1,5 @@
+{
+    "api_base_uri": "https://intersight.com/api/v1",
+    "api_key_id": "<INSERT INTERSIGHT API KEY ID>",
+    "api_private_key_file": "/PATH/TO/KEY/FILE"
+}
