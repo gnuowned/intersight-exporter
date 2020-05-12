@@ -1,12 +1,12 @@
-#Intersight-Exporter is an Prometheus Metrics Exporter for Cisco Intersight
+# Intersight-Exporter is an Prometheus Metrics Exporter for Cisco Intersight
 
-##Installation
-#Requirements
+## Installation
+### Requirements
 
 Python3.7
 pip3
 
-#Running Locally
+### Running Locally
 
 Install Prometheus client_python
 ```
@@ -35,6 +35,6 @@ Run intersight-exporter
 python intersight_exporter.py
 ```
 
-#WIP Help Wanted
+# WIP Help Wanted
 
 
