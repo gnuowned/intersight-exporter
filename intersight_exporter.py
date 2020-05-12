@@ -7,8 +7,8 @@ from intersight.intersight_api_client import IntersightApiClient
 from intersight.apis import iam_permission_api
 from intersight.apis import iam_idp_reference_api
 from intersight.apis import iam_user_api
-from intersight.apis import hyperflex_cluster_api, compute_physical_summary_api, compute_blade_api, compute_rack_unit_api
-from prometheus_client import start_http_server, Summary, Gauge
+from intersight.apis import hyperflex_cluster_api, compute_physical_summary_api, compute_blade_api, compute_rack_unit_api, hyperflex_health_api
+from prometheus_client import start_http_server, Summary, Gauge, Enum 
 import time
 
 
@@ -38,6 +38,21 @@ def hyperflex_clusters (intersight_api_params, api_instance):
     hx_clusters = hx_clusters_handle.hyperflex_clusters_get(count=True)
     return hx_clusters.count
 
+def hyperflex_clusters_moid (intersight_api_params, api_instance, moid):
+    hx_clusters_handle = hyperflex_cluster_api.HyperflexClusterApi (api_instance)
+    hx_clusters = hx_clusters_handle.hyperflex_clusters_moid_get(moid)
+    return hx_clusters 
+
+
+hyperflex_health_enum = Enum('intersight_hyperflex_health', 'intersight_hyperflex_health', ['cluster'], states=['UNKNOWN', 'ONLINE', 'OFFLINE', 'ENOSPACE', 'READONLY'])
+
+def hyperflex_health (intersight_api_params, api_instance):
+    handle = hyperflex_health_api.HyperflexHealthApi(api_instance)
+    api_call = handle.hyperflex_healths_get()
+    return api_call
+
+
+
 
 
 if __name__ == "__main__":
@@ -64,9 +79,20 @@ if __name__ == "__main__":
     # Generate some requests.
     while True:
         hx_clusters_gauge.set(hyperflex_clusters(intersight_api_params, api_instance))
+        
         compute_physical_summary_gauge.labels(deviceType='all').set(compute_physical_summary(intersight_api_params, api_instance))
         compute_physical_summary_gauge.labels(deviceType='blades').set(compute_blade(intersight_api_params, api_instance))
         compute_physical_summary_gauge.labels(deviceType='rack_units').set(compute_rack_unit(intersight_api_params, api_instance))
+
+        for cluster in hyperflex_health(intersight_api_params, api_instance).results:
+            hyperflex_health_enum.labels(cluster='ALL').state(cluster.state)
+
+
+        for cluster in hyperflex_health(intersight_api_params, api_instance).results:
+            cluster_moid = hyperflex_clusters_moid(intersight_api_params, api_instance, cluster.cluster.moid)
+            print (cluster)
+            hyperflex_health_enum.labels(cluster=cluster_moid.cluster_name).state(cluster.state)
+
         time.sleep(args.pooltime)
 
 
